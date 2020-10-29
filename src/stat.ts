@@ -40,4 +40,8 @@ export interface TreasureStat {
 	readonly playerClass: string;
 	readonly totalOffered: number;
 	readonly totalPicked: number;
+	readonly totalMatches: number;
+	readonly totalWins: number;
+	readonly totalLosses: number;
+	readonly totalTies: number;
 }

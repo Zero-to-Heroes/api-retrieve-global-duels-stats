@@ -58,17 +58,36 @@ export default async (event): Promise<any> => {
 
 const loadTreasureStats = async (mysql): Promise<readonly TreasureStat[]> => {
 	const periodStart = new Date(new Date().getTime() - 100 * 24 * 60 * 60 * 1000);
-	const query = `
+
+	const pickQuery = `
 		SELECT '${periodStart.toISOString()}' as periodStart, cardId, playerClass, SUM(totalOffered) as totalOffered, SUM(totalPicked) as totalPicked
 		FROM duels_stats_treasure
 		WHERE periodStart >= '${periodStart.toISOString()}'
 		GROUP BY cardId, playerClass;
 	`;
-	console.log('running query', query);
-	const dbResults: any[] = await mysql.query(query);
-	console.log('dbResults', dbResults);
+	console.log('running query', pickQuery);
+	const pickResults: any[] = await mysql.query(pickQuery);
+	console.log('pickResults', pickResults);
 
-	return dbResults.map(result => ({ ...result } as TreasureStat));
+	const winrateQuery = `
+		SELECT '${periodStart.toISOString()}' as periodStart, cardId, playerClass, SUM(matchesPlayed) as matchesPlayed, SUM(totalLosses) as totalLosses, SUM(totalTies) as totalTies, SUM(totalWins) as totalWins
+		FROM duels_stats_treasure_winrate
+		WHERE periodStart >= '${periodStart.toISOString()}'
+		GROUP BY cardId, playerClass;
+	`;
+	console.log('running query', winrateQuery);
+	const winrateResults: any[] = await mysql.query(winrateQuery);
+	console.log('winrateResults', winrateResults);
+
+	return pickResults.map(result => {
+		const winrateResult = winrateResults.find(
+			res => res.cardId === result.cardId && res.playerClass === res.playerClass,
+		);
+		return {
+			...result,
+			...winrateResult,
+		} as TreasureStat;
+	});
 };
 
 const loadHeroStats = async (mysql): Promise<readonly HeroStat[]> => {
