@@ -7,12 +7,12 @@ import { DuelsGlobalStats, HeroPowerStat, HeroStat, SignatureTreasureStat, Treas
 // the more traditional callback-style handler.
 // [1]: https://aws.amazon.com/blogs/compute/node-js-8-10-runtime-now-available-in-aws-lambda/
 export default async (event): Promise<any> => {
-	const headers = {
-		'Access-Control-Allow-Headers':
-			'Accept,Accept-Language,Content-Language,Content-Type,Authorization,x-correlation-id,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-		'Access-Control-Allow-Methods': 'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT',
-		'Access-Control-Allow-Origin': event?.headers?.Origin || event?.headers?.origin || '*',
-	};
+	// const headers = {
+	// 	'Access-Control-Allow-Headers':
+	// 		'Accept,Accept-Language,Content-Language,Content-Type,Authorization,x-correlation-id,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+	// 	'Access-Control-Allow-Methods': 'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT',
+	// 	'Access-Control-Allow-Origin': event?.headers?.Origin || event?.headers?.origin || '*',
+	// };
 	try {
 		const mysql = await getConnection();
 
@@ -49,7 +49,6 @@ export default async (event): Promise<any> => {
 			statusCode: 500,
 			isBase64Encoded: false,
 			body: null,
-			headers: headers,
 		};
 		console.log('sending back error reponse', response);
 		return response;
