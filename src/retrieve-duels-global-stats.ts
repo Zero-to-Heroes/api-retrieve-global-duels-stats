@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { gzipSync } from 'zlib';
 import { getConnection } from './db/rds';
-import { DuelsGlobalStats, HeroPowerStat, HeroStat, SignatureTreasureStat, TreasureStat } from './stat';
+import { DeckStat, DuelsGlobalStats, HeroPowerStat, HeroStat, SignatureTreasureStat, TreasureStat } from './stat';
 
 // This example demonstrates a NodeJS 8.10 async handler[1], however of course you could use
 // the more traditional callback-style handler.
@@ -21,12 +21,14 @@ export default async (event): Promise<any> => {
 		const heroPowerStats: readonly HeroPowerStat[] = await loadHeroPowerStats(mysql);
 		const signatureTreasureStats: readonly SignatureTreasureStat[] = await loadSignatureTreasureStats(mysql);
 		const treasureStats: readonly TreasureStat[] = await loadTreasureStats(mysql);
+		const deckStats: readonly DeckStat[] = await loadDeckStats(mysql);
 
 		const result: DuelsGlobalStats = {
 			heroStats: heroStats,
 			heroPowerStats: heroPowerStats,
 			signatureTreasureStats: signatureTreasureStats,
 			treasureStats: treasureStats,
+			deckStats: deckStats,
 		};
 
 		const stringResults = JSON.stringify({ result });
@@ -53,6 +55,29 @@ export default async (event): Promise<any> => {
 		console.log('sending back error reponse', response);
 		return response;
 	}
+};
+
+const loadDeckStats = async (mysql): Promise<readonly DeckStat[]> => {
+	const periodStart = new Date(new Date().getTime() - 100 * 24 * 60 * 60 * 1000);
+	const query = `
+		SELECT *
+		FROM duels_stats_deck
+		WHERE periodStart >= '${periodStart.toISOString()}'
+		ORDER BY id desc
+		LIMIT 100;
+	`;
+	console.log('running query', query);
+	const dbResults: any[] = await mysql.query(query);
+	console.log('dbResults', dbResults);
+
+	return dbResults.map(
+		result =>
+			({
+				...result,
+				// periodStart: periodStart.toISOString(),
+				treasuresCardIds: (result.treasuresCardIds || []).split(','),
+			} as DeckStat),
+	);
 };
 
 const loadTreasureStats = async (mysql): Promise<readonly TreasureStat[]> => {

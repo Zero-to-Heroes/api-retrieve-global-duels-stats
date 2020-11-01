@@ -5,6 +5,7 @@ export interface DuelsGlobalStats {
 	readonly heroPowerStats: readonly HeroPowerStat[];
 	readonly signatureTreasureStats: readonly SignatureTreasureStat[];
 	readonly treasureStats: readonly TreasureStat[];
+	readonly deckStats: readonly DeckStat[];
 }
 
 export interface HeroStat {
@@ -40,8 +41,25 @@ export interface TreasureStat {
 	readonly playerClass: string;
 	readonly totalOffered: number;
 	readonly totalPicked: number;
-	readonly totalMatches: number;
+	readonly matchesPlayed: number;
 	readonly totalWins: number;
 	readonly totalLosses: number;
 	readonly totalTies: number;
+}
+
+export interface DeckStat {
+	readonly id: number;
+	readonly periodStart: string;
+	readonly decklist: string;
+	readonly finalDecklist: string;
+	readonly playerClass: string;
+	readonly heroCardId: string;
+	readonly heroPowerCardId: string;
+	readonly signatureTreasureCardId: string;
+	readonly treasuresCardIds: readonly string[];
+	readonly runId: string;
+	readonly wins: number;
+	readonly losses: number;
+	readonly rating: number;
+	readonly runStartDate: string;
 }
