@@ -1,6 +1,22 @@
 import { ReferencePlayerClass } from '@firestone-hs/reference-data/lib/models/reference-cards/reference-player-class';
 
 export interface DuelsGlobalStats {
+	readonly statsForFullPeriod: DuelsGlobalStatsForPeriod;
+	readonly statsSinceLastPatch: DuelsGlobalStatsForPeriod;
+	// All of these are deprecated and are there only for backward compatilbity
+	/** @deprecated */
+	readonly heroStats: readonly HeroStat[];
+	/** @deprecated */
+	readonly heroPowerStats: readonly HeroPowerStat[];
+	/** @deprecated */
+	readonly signatureTreasureStats: readonly SignatureTreasureStat[];
+	/** @deprecated */
+	readonly treasureStats: readonly TreasureStat[];
+	/** @deprecated */
+	readonly deckStats: readonly DeckStat[];
+}
+
+export interface DuelsGlobalStatsForPeriod {
 	readonly heroStats: readonly HeroStat[];
 	readonly heroPowerStats: readonly HeroPowerStat[];
 	readonly signatureTreasureStats: readonly SignatureTreasureStat[];
@@ -15,6 +31,7 @@ export interface HeroStat {
 	readonly heroClass: ReferencePlayerClass;
 	readonly totalMatches: number;
 	readonly totalWins: number;
+	readonly winDistribution: { [winNumber: string]: number };
 }
 
 export interface HeroPowerStat {
