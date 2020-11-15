@@ -1,8 +1,9 @@
 import { ReferencePlayerClass } from '@firestone-hs/reference-data/lib/models/reference-cards/reference-player-class';
 
 export interface DuelsGlobalStats {
-	readonly statsForFullPeriod: DuelsGlobalStatsForPeriod;
-	readonly statsSinceLastPatch: DuelsGlobalStatsForPeriod;
+	readonly duels: DuelsGlobalStatsForGameMode;
+	readonly paidDuels: DuelsGlobalStatsForGameMode;
+	readonly both: DuelsGlobalStatsForGameMode;
 	// All of these are deprecated and are there only for backward compatilbity
 	/** @deprecated */
 	readonly heroStats: readonly HeroStat[];
@@ -14,6 +15,13 @@ export interface DuelsGlobalStats {
 	readonly treasureStats: readonly TreasureStat[];
 	/** @deprecated */
 	readonly deckStats: readonly DeckStat[];
+	readonly statsForFullPeriod: DuelsGlobalStatsForPeriod;
+	readonly statsSinceLastPatch: DuelsGlobalStatsForPeriod;
+}
+
+export interface DuelsGlobalStatsForGameMode {
+	readonly statsForFullPeriod: DuelsGlobalStatsForPeriod;
+	readonly statsSinceLastPatch: DuelsGlobalStatsForPeriod;
 }
 
 export interface DuelsGlobalStatsForPeriod {
@@ -41,6 +49,7 @@ export interface HeroPowerStat {
 	readonly heroClass: ReferencePlayerClass;
 	readonly totalMatches: number;
 	readonly totalWins: number;
+	readonly winDistribution: { [winNumber: string]: number };
 }
 
 export interface SignatureTreasureStat {
@@ -50,6 +59,7 @@ export interface SignatureTreasureStat {
 	readonly heroClass: ReferencePlayerClass;
 	readonly totalMatches: number;
 	readonly totalWins: number;
+	readonly winDistribution: { [winNumber: string]: number };
 }
 
 export interface TreasureStat {
@@ -67,6 +77,7 @@ export interface TreasureStat {
 export interface DeckStat {
 	readonly id: number;
 	readonly periodStart: string;
+	readonly gameMode: 'duels' | 'paid-duels';
 	readonly decklist: string;
 	readonly finalDecklist: string;
 	readonly playerClass: string;
