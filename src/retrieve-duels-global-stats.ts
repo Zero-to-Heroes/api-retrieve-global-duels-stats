@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import { CardIds } from '@firestone-hs/reference-data';
 import { gzipSync } from 'zlib';
 import { getConnection } from './db/rds';
 import {
@@ -11,6 +12,11 @@ import {
 	TreasureStat,
 } from './stat';
 import { groupByFunction, http } from './utils';
+
+const TREASURES_REMOVED_CARDS = [
+	CardIds.NonCollectible.Neutral.RobesOfGaudiness,
+	CardIds.NonCollectible.Neutral.HeadmasterKelThuzad_MrBigglesworthToken,
+];
 
 // This example demonstrates a NodeJS 8.10 async handler[1], however of course you could use
 // the more traditional callback-style handler.
@@ -133,20 +139,28 @@ const merge = (periodStartDate: Date, ...stats: readonly DuelsGlobalStatsForPeri
 
 const mergeTreasureStats = (periodStartDate: Date, stats: readonly TreasureStat[]): readonly TreasureStat[] => {
 	const uniqueCardIds = [...new Set(stats.map(stat => stat.cardId))];
-	return uniqueCardIds.map(treasureCardId => {
-		const relevant: readonly TreasureStat[] = stats.filter(stat => stat.cardId === treasureCardId);
-		return {
-			periodStart: periodStartDate.toISOString(),
-			cardId: treasureCardId,
-			playerClass: relevant[0].playerClass,
-			matchesPlayed: relevant.map(stat => stat.matchesPlayed).reduce((a, b) => a + b, 0),
-			totalLosses: relevant.map(stat => stat.totalLosses).reduce((a, b) => a + b, 0),
-			totalOffered: relevant.map(stat => stat.totalOffered).reduce((a, b) => a + b, 0),
-			totalPicked: relevant.map(stat => stat.totalPicked).reduce((a, b) => a + b, 0),
-			totalTies: relevant.map(stat => stat.totalTies).reduce((a, b) => a + b, 0),
-			totalWins: relevant.map(stat => stat.totalWins).reduce((a, b) => a + b, 0),
-		};
-	});
+	return uniqueCardIds
+		.map(treasureCardId => {
+			const relevant: readonly TreasureStat[] = stats.filter(stat => stat.cardId === treasureCardId);
+			const uniquePlayerClasses: readonly string[] = [...new Set(relevant.map(stat => stat.playerClass))];
+			return uniquePlayerClasses.map(playerClass => {
+				const relevantForClass: readonly TreasureStat[] = relevant.filter(
+					stat => stat.playerClass === playerClass,
+				);
+				return {
+					periodStart: periodStartDate.toISOString(),
+					cardId: treasureCardId,
+					playerClass: relevantForClass[0].playerClass,
+					matchesPlayed: relevantForClass.map(stat => stat.matchesPlayed).reduce((a, b) => a + b, 0),
+					totalLosses: relevantForClass.map(stat => stat.totalLosses).reduce((a, b) => a + b, 0),
+					totalOffered: relevantForClass.map(stat => stat.totalOffered).reduce((a, b) => a + b, 0),
+					totalPicked: relevantForClass.map(stat => stat.totalPicked).reduce((a, b) => a + b, 0),
+					totalTies: relevantForClass.map(stat => stat.totalTies).reduce((a, b) => a + b, 0),
+					totalWins: relevantForClass.map(stat => stat.totalWins).reduce((a, b) => a + b, 0),
+				};
+			});
+		})
+		.reduce((a, b) => a.concat(b), []);
 };
 
 const mergeSignatureTreasureStats = (
@@ -295,17 +309,20 @@ const loadTreasureStats = async (
 	const winrateResults: any[] = await mysql.query(winrateQuery);
 	console.log('winrateResults', winrateResults);
 
-	return pickResults
-		.filter(result => result.cardId !== 'DALA_735') // Robes of Gaudiness
+	const result = pickResults
+		.filter(result => !TREASURES_REMOVED_CARDS.includes(result.cardId)) // Robes of Gaudiness
 		.map(result => {
 			const winrateResult = winrateResults.find(
-				res => res.cardId === result.cardId && res.playerClass === res.playerClass,
+				res => res.cardId === result.cardId && res.playerClass === result.playerClass,
 			);
+			// console.log('mapping', result, winrateResult);
 			return {
 				...result,
 				...winrateResult,
 			} as TreasureStat;
 		});
+	console.log('treasureResults', result);
+	return result;
 };
 
 const loadHeroStats = async (
