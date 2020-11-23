@@ -21,9 +21,15 @@ Resources:
             Handler: retrieve-duels-global-stats.default
             # Runtime: nodejs8.10
             Runtime: nodejs10.x
-            Timeout: 180
+            Timeout: 30
             ReservedConcurrentExecutions: 40
             CodeUri: ./dist/retrieve-duels-global-stats
+            # https://stackoverflow.com/questions/39144688/aws-lambda-invoke-not-calling-another-lambda-function-node-js
+            VpcConfig:
+                SecurityGroupIds:
+                    - sg-0ed63616362bf1a30
+                SubnetIds:
+                    - subnet-0b730ca9af74a95dd
             Policies:
                 - AWSLambdaVPCAccessExecutionRole
                 - AmazonSESFullAccess

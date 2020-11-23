@@ -55,6 +55,7 @@ export default async (event): Promise<any> => {
 			mysql,
 			'paid-duels',
 		);
+		await mysql.end();
 		// console.log('calling merge', statsForFullPeriodDuels, statsForFullPeriodPaidDuels);
 		const statsForFullPeriodBoth: DuelsGlobalStatsForPeriod = merge(
 			fullPeriodStartDate,
@@ -277,7 +278,7 @@ const loadDeckStats = async (
 			({
 				...result,
 				// periodStart: periodStart.toISOString(),
-				treasuresCardIds: (result.treasuresCardIds || []).split(','),
+				treasuresCardIds: (result.treasuresCardIds || '').split(','),
 			} as DeckStat),
 	);
 };
